@@ -1,0 +1,81 @@
+package main
+
+import (
+	"DTXMapDownload/app/client"
+	"DTXMapDownload/app/config"
+	"DTXMapDownload/pkg/global"
+	"DTXMapDownload/pkg/utils"
+	"fmt"
+	"github.com/spf13/cobra"
+	"log"
+	"os"
+	"strings"
+)
+
+func main() {
+	global.Settings = config.NewConfig()
+	err := global.Settings.Load()
+	if err != nil {
+		fmt.Printf("Load settings fail, use default config: %v", err)
+	}
+	log.Printf("%#v\n", global.Settings)
+	c := client.NewCollector(global.Settings.SourceURL)
+	rootCMD := &cobra.Command{
+		Short: "DTXMania Map Download Command",
+		Args:  cobra.NoArgs,
+	}
+	//listCMD := &cobra.Command{
+	//	Use:   "list",
+	//	Short: "getSongsInfo available maps",
+	//	Run: func(cmd *cobra.Command, args []string) {
+	//		c.getSongsInfo(constants.SourceURL)
+	//	},
+	//}
+	downloadCMD := &cobra.Command{
+		Use:   "download [index]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Download the specified map from source",
+		Run: func(cmd *cobra.Command, args []string) {
+			name := args[0]
+			fmt.Println("You download", name)
+			c.Download(name)
+		},
+	}
+	searchCMD := &cobra.Command{
+		Use:   "search [name]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Search song's map from source",
+		Run: func(cmd *cobra.Command, args []string) {
+			name := args[0]
+			fmt.Println("You search", name)
+			c.Search(name)
+		},
+	}
+	configCMD := &cobra.Command{
+		Use: "config [key] [value]",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 2 {
+				return fmt.Errorf("you need to use 2 exact args, you only use %d args now", len(args))
+			}
+			validArgs := []string{"game"}
+			if !utils.ContainsString(args[0], validArgs) {
+				return fmt.Errorf("you can only use these args: %s", strings.Join(cmd.ValidArgs, " "))
+			}
+			return nil
+		},
+		Short: "Set downloader config",
+		Run: func(cmd *cobra.Command, args []string) {
+			key, value := args[0], args[1]
+			fmt.Printf("You set config [%s] to [%s]\n", key, value)
+			c.Config(key, value)
+		},
+	}
+	//rootCMD.AddCommand(listCMD)
+	rootCMD.AddCommand(downloadCMD)
+	rootCMD.AddCommand(searchCMD)
+	rootCMD.AddCommand(configCMD)
+	err = rootCMD.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
+}
