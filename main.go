@@ -6,10 +6,11 @@ import (
 	"DTXMapDownload/pkg/global"
 	"DTXMapDownload/pkg/utils"
 	"fmt"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 func main() {
@@ -51,13 +52,19 @@ func main() {
 			c.Search(name)
 		},
 	}
+
 	configCMD := &cobra.Command{
-		Use: "config [key] [value]",
+		Use:   "config",
+		Short: "Manage downloader configs",
+	}
+
+	configSetCMD := &cobra.Command{
+		Use: "set [key] [value]",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 2 {
 				return fmt.Errorf("you need to use 2 exact args, you only use %d args now", len(args))
 			}
-			validArgs := []string{"game"}
+			validArgs := []string{"game", "source"}
 			if !utils.ContainsString(args[0], validArgs) {
 				return fmt.Errorf("you can only use these args: %s", strings.Join(cmd.ValidArgs, " "))
 			}
@@ -67,12 +74,21 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			key, value := args[0], args[1]
 			fmt.Printf("You set config [%s] to [%s]\n", key, value)
-			c.Config(key, value)
+			c.SetConfig(key, value)
+		},
+	}
+	configListCMD := &cobra.Command{
+		Use:   "list",
+		Args:  cobra.NoArgs,
+		Short: "List downloader config",
+		Run: func(cmd *cobra.Command, args []string) {
+			global.Settings.List()
 		},
 	}
 	//rootCMD.AddCommand(listCMD)
 	rootCMD.AddCommand(downloadCMD)
 	rootCMD.AddCommand(searchCMD)
+	configCMD.AddCommand(configSetCMD, configListCMD)
 	rootCMD.AddCommand(configCMD)
 	err = rootCMD.Execute()
 	if err != nil {

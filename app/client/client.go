@@ -5,8 +5,9 @@ import (
 	"DTXMapDownload/pkg/global"
 	"DTXMapDownload/pkg/utils"
 	"fmt"
-	"github.com/gocolly/colly"
 	"log"
+
+	"github.com/gocolly/colly"
 )
 
 type Client struct {
@@ -94,12 +95,16 @@ func (c *Client) Collect() {
 	}
 }
 
-func (c *Client) Config(key string, value string) {
+func (c *Client) SetConfig(key string, value string) {
 	switch key {
 	case "game":
 		global.Settings.GameSongsPath = value
+		fmt.Printf("Game songs storage path was set to %s\n", global.Settings.GameSongsPath)
+	case "source":
+		global.Settings.SourceURL = utils.CompleteToFullURL(value)
+		fmt.Printf("Songs source url was set to %s\n", global.Settings.SourceURL)
 	}
-	fmt.Printf("Game songs storage path is set to %s\n", global.Settings.GameSongsPath)
+
 	err := global.Settings.Save()
 	if err != nil {
 		log.Printf("config save failed: %v", err)
