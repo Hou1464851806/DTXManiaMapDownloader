@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -66,5 +67,14 @@ func (c *Config) Save() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *Config) List() error {
+	data, err := json.MarshalIndent(c, "", "	")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
 	return nil
 }

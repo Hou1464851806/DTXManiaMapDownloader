@@ -51,3 +51,10 @@ func ContainsString(elem string, list []string) bool {
 	}
 	return false
 }
+
+func CompleteToFullURL(raw string) string {
+	if !strings.Contains(raw, "https://") && !strings.Contains(raw, "http://") {
+		raw = "http://" + raw
+	}
+	return raw
+}
